@@ -1,0 +1,61 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Daily Usage - Energy Consumption Tracker{% endblock %}
+
+{% block content %}
+<section class="daily-usage">
+    <h2>Daily Energy Consumption</h2>
+    
+    <div class="chart-container large">
+        <canvas id="dailyChart"></canvas>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Highest Usage</h3>
+            <div class="data-value" id="highest-daily">--</div>
+            <div class="data-label">Most energy-intensive day</div>
+        </div>
+        
+        <div class="card">
+            <h3>Lowest Usage</h3>
+            <div class="data-value" id="lowest-daily">--</div>
+            <div class="data-label">Most efficient day</div>
+        </div>
+        
+        <div class="card">
+            <h3>Weekly Average</h3>
+            <div class="data-value" id="average-daily">--</div>
+            <div class="data-label">kWh per day</div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/daily_data')
+        .then(response => response.json())
+        .then(data => {
+            createDailyChart(data);
+            
+            // Calculate stats
+            if (data.length > 0) {
+                const consumptions = data.map(item => item.consumption);
+                const max = Math.max(...consumptions);
+                const min = Math.min(...consumptions);
+                const avg = consumptions.reduce((a, b) => a + b, 0) / consumptions.length;
+                
+                const maxDay = data.find(item => item.consumption === max);
+                const minDay = data.find(item => item.consumption === min);
+                
+                document.getElementById('highest-daily').textContent = `${max.toFixed(2)} kWh (${maxDay.date})`;
+                document.getElementById('lowest-daily').textContent = `${min.toFixed(2)} kWh (${minDay.date})`;
+                document.getElementById('average-daily').textContent = `${avg.toFixed(2)} kWh`;
+            }
+        });
+});
+</script>
+{% endblock %}
