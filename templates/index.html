@@ -1,0 +1,60 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - Energy Consumption Tracker{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <h2>Energy Consumption Dashboard</h2>
+    
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>Current Power</h3>
+            <div class="data-value">{{ latest_data.power_consumption|default(0)|round(2) }} <span>watts</span></div>
+            <div class="data-label">Last updated: {{ latest_data.timestamp|default('N/A') }}</div>
+        </div>
+        
+        <div class="card">
+            <h3>Today's Usage</h3>
+            <div class="data-value">{{ today_total|round(2) }} <span>kWh</span></div>
+            <div class="data-label">Total consumption</div>
+        </div>
+        
+        <div class="card">
+            <h3>Voltage</h3>
+            <div class="data-value">{{ latest_data.voltage|default(0)|round(1) }} <span>V</span></div>
+            <div class="data-label">Current reading</div>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Today's Hourly Consumption</h3>
+        <canvas id="hourlyChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Weekly Consumption</h3>
+        <canvas id="weeklyChart"></canvas>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hourly consumption chart
+    fetch('/api/hourly_data')
+        .then(response => response.json())
+        .then(data => {
+            createHourlyChart(data);
+        });
+    
+    // Weekly consumption chart
+    fetch('/api/daily_data')
+        .then(response => response.json())
+        .then(data => {
+            createWeeklyChart(data);
+        });
+});
+</script>
+{% endblock %}
