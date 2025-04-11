@@ -1,0 +1,61 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Monthly Usage - Energy Consumption Tracker{% endblock %}
+
+{% block content %}
+<section class="monthly-usage">
+    <h2>Monthly Energy Consumption</h2>
+    
+    <div class="chart-container large">
+        <canvas id="monthlyChart"></canvas>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Highest Month</h3>
+            <div class="data-value" id="highest-monthly">--</div>
+            <div class="data-label">Most energy-intensive month</div>
+        </div>
+        
+        <div class="card">
+            <h3>Lowest Month</h3>
+            <div class="data-value" id="lowest-monthly">--</div>
+            <div class="data-label">Most efficient month</div>
+        </div>
+        
+        <div class="card">
+            <h3>Monthly Average</h3>
+            <div class="data-value" id="average-monthly">--</div>
+            <div class="data-label">kWh per month</div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/monthly_data')
+        .then(response => response.json())
+        .then(data => {
+            createMonthlyChart(data);
+            
+            // Calculate stats
+            if (data.length > 0) {
+                const consumptions = data.map(item => item.consumption);
+                const max = Math.max(...consumptions);
+                const min = Math.min(...consumptions);
+                const avg = consumptions.reduce((a, b) => a + b, 0) / consumptions.length;
+                
+                const maxMonth = data.find(item => item.consumption === max);
+                const minMonth = data.find(item => item.consumption === min);
+                
+                document.getElementById('highest-monthly').textContent = `${max.toFixed(2)} kWh (${maxMonth.month})`;
+                document.getElementById('lowest-monthly').textContent = `${min.toFixed(2)} kWh (${minMonth.month})`;
+                document.getElementById('average-monthly').textContent = `${avg.toFixed(2)} kWh`;
+            }
+        });
+});
+</script>
+{% endblock %}
